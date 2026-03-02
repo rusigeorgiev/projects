@@ -138,6 +138,7 @@ async function normalizeProject(input, existing = {}) {
     tags: Array.isArray(input.tags)
       ? input.tags.map((tag) => String(tag).trim()).filter(Boolean)
       : existing.tags || [],
+    deletedAt: input.deletedAt === null ? null : existing.deletedAt || null,
     updatedAt: new Date().toISOString()
   };
 }
@@ -284,10 +285,15 @@ app.get("/api/projects", async (req, res, next) => {
     const mode = typeof req.query.mode === "string" ? req.query.mode : "deep";
     const currentContext = typeof req.query.context === "string" ? req.query.context.trim() : "";
     const projects = await readProjects();
-    const sorted = [...projects].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    const activeProjects = projects.filter((project) => !project.deletedAt);
+    const deletedProjects = projects
+      .filter((project) => project.deletedAt)
+      .sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt));
+    const sorted = [...activeProjects].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
     res.json({
       projects: sorted,
+      deletedProjects,
       recommendation: computeRecommendation(sorted, mode, currentContext),
       mode,
       context: currentContext
@@ -316,7 +322,7 @@ app.get("/api/projects/:id", async (req, res, next) => {
 app.post("/api/projects", async (req, res, next) => {
   try {
     const projects = await readProjects();
-    const project = await normalizeProject(req.body);
+    const project = await normalizeProject({ ...req.body, deletedAt: null });
     const nextProjects = [project, ...projects];
     await writeProjects(nextProjects);
     res.status(201).json(project);
@@ -350,19 +356,47 @@ app.put("/api/projects/:id", async (req, res, next) => {
   }
 });
 
-app.delete("/api/projects/:id", async (req, res, next) => {
+app.post("/api/projects/:id/restore", async (req, res, next) => {
   try {
     const projects = await readProjects();
-    const projectToDelete = projects.find((entry) => entry.id === req.params.id);
-    const nextProjects = projects.filter((entry) => entry.id !== req.params.id);
+    const index = projects.findIndex((entry) => entry.id === req.params.id);
 
-    if (nextProjects.length === projects.length) {
+    if (index === -1) {
       res.status(404).json({ error: "Project not found" });
       return;
     }
 
+    const restored = {
+      ...projects[index],
+      deletedAt: null,
+      updatedAt: new Date().toISOString()
+    };
+    const nextProjects = [...projects];
+    nextProjects[index] = restored;
     await writeProjects(nextProjects);
-    await removeManagedImageFiles(flattenImagePaths(projectToDelete?.images));
+    res.json(restored);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete("/api/projects/:id", async (req, res, next) => {
+  try {
+    const projects = await readProjects();
+    const index = projects.findIndex((entry) => entry.id === req.params.id);
+
+    if (index === -1) {
+      res.status(404).json({ error: "Project not found" });
+      return;
+    }
+
+    const nextProjects = [...projects];
+    nextProjects[index] = {
+      ...projects[index],
+      deletedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    await writeProjects(nextProjects);
     res.status(204).send();
   } catch (error) {
     next(error);

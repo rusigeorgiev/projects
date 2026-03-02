@@ -78,6 +78,7 @@ button {
 
 .brand-card,
 .assistant-card,
+.trash-card,
 .toolbar {
   border-radius: 28px;
   padding: 24px;
@@ -117,6 +118,7 @@ label span,
 }
 
 .assistant-card,
+.trash-card,
 .toolbar {
   margin-top: 20px;
 }
@@ -366,6 +368,74 @@ label span,
   gap: 10px;
 }
 
+.trash-card {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: var(--shadow);
+}
+
+.trash-header,
+.trash-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trash-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.trash-item {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.trash-item:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.trash-item strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.trash-item p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.danger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 8px;
+  padding: 18px 20px;
+  border: 1px solid rgba(215, 38, 61, 0.22);
+  border-radius: 20px;
+  background: rgba(215, 38, 61, 0.06);
+}
+
+.danger-copy {
+  margin: 6px 0 0;
+  color: #8f1226;
+}
+
+.danger-button {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-weight: 700;
+  background: #d7263d;
+  color: #fff;
+  white-space: nowrap;
+}
+
 .image-section {
   display: grid;
   gap: 14px;
@@ -551,7 +621,8 @@ label span,
   .panel-actions,
   .form-row,
   .section-head,
-  .image-card-meta {
+  .image-card-meta,
+  .danger-zone {
     flex-direction: column;
     align-items: stretch;
   }

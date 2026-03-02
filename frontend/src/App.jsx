@@ -103,6 +103,7 @@ async function createThumbnail(dataUrl, maxSize = 220) {
 
 export default function App() {
   const [projects, setProjects] = useState([]);
+  const [deletedProjects, setDeletedProjects] = useState([]);
   const [recommendation, setRecommendation] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [draft, setDraft] = useState(emptyProject);
@@ -129,6 +130,7 @@ export default function App() {
       }
       const data = await request(`/api/projects?${params.toString()}`);
       setProjects(data.projects);
+      setDeletedProjects(data.deletedProjects || []);
       setRecommendation(data.recommendation);
 
       const preferredId = keepSelection ? selectedProjectId || selectedId || data.projects[0]?.id || null : null;
@@ -281,9 +283,28 @@ export default function App() {
         method: "DELETE"
       });
       setImageViewer(null);
-      await loadProjects(null, mode);
+      setSelectedId(null);
+      setIsDetailsOpen(false);
+      setDraft({ ...emptyProject });
+      await loadProjects(null, mode, false);
     } catch {
       setError("Delete failed. Try again once the backend is reachable.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleRestore(projectId) {
+    setSaving(true);
+    setError("");
+
+    try {
+      await request(`/api/projects/${projectId}/restore`, {
+        method: "POST"
+      });
+      await loadProjects(projectId, mode, false);
+    } catch {
+      setError("Restore failed. Try again once the backend is reachable.");
     } finally {
       setSaving(false);
     }
@@ -378,6 +399,43 @@ export default function App() {
           </button>
         ))}
       </div>
+    );
+  }
+
+  function renderTrash() {
+    if (!deletedProjects.length) {
+      return null;
+    }
+
+    return (
+      <section className="trash-card">
+        <div className="trash-header">
+          <div>
+            <p className="eyebrow">Trash</p>
+            <h3>Recently Deleted</h3>
+          </div>
+          <span className="tag-chip">{deletedProjects.length}</span>
+        </div>
+
+        <div className="trash-list">
+          {deletedProjects.map((project) => (
+            <article className="trash-item" key={project.id}>
+              <div>
+                <strong>{project.name}</strong>
+                <p>{project.goal || project.nextAction || "No summary saved."}</p>
+              </div>
+              <button
+                className="ghost-button"
+                type="button"
+                disabled={saving}
+                onClick={() => handleRestore(project.id)}
+              >
+                Restore
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
     );
   }
 
@@ -476,6 +534,7 @@ export default function App() {
           />
         </div>
 
+        {renderTrash()}
         {isDetailsOpen ? renderProjectTiles() : null}
       </aside>
 
@@ -490,9 +549,6 @@ export default function App() {
               <div className="panel-actions">
                 <button className="ghost-button" type="button" onClick={closeDetails} disabled={saving}>
                   {saving ? "Closing..." : "Close"}
-                </button>
-                <button className="ghost-button" type="button" onClick={handleDelete} disabled={saving}>
-                  {draft.id ? "Delete" : "Clear"}
                 </button>
                 <button className="primary-button" type="submit" form="project-form" disabled={saving}>
                   {saving ? "Saving..." : "Save Project"}
@@ -691,6 +747,25 @@ export default function App() {
                   placeholder="Record sharp edges, context, and decisions you do not want to rediscover."
                 />
               </label>
+
+              {draft.id ? (
+                <section className="danger-zone">
+                  <div>
+                    <p className="eyebrow">Danger Zone</p>
+                    <p className="danger-copy">
+                      Delete moves this project to Trash so it can be restored later.
+                    </p>
+                  </div>
+                  <button
+                    className="danger-button"
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={saving}
+                  >
+                    Delete Project
+                  </button>
+                </section>
+              ) : null}
             </form>
           </>
         ) : (
