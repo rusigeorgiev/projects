@@ -26,6 +26,11 @@ const modeLabels = {
   admin: "Admin"
 };
 
+const themeLabels = {
+  black: "Dark",
+  light: "Light"
+};
+
 function normalizeTags(rawTags) {
   return rawTags
     .split(",")
@@ -102,6 +107,7 @@ async function createThumbnail(dataUrl, maxSize = 220) {
 }
 
 export default function App() {
+  const [theme, setTheme] = useState(() => localStorage.getItem("switchboard-theme") || "black");
   const [projects, setProjects] = useState([]);
   const [deletedProjects, setDeletedProjects] = useState([]);
   const [recommendation, setRecommendation] = useState(null);
@@ -118,6 +124,10 @@ export default function App() {
   const [imageViewer, setImageViewer] = useState(null);
 
   const deferredSearch = useDeferredValue(search);
+
+  useEffect(() => {
+    localStorage.setItem("switchboard-theme", theme);
+  }, [theme]);
 
   async function loadProjects(selectedProjectId, nextMode = mode, keepSelection = true) {
     setLoading(true);
@@ -440,10 +450,24 @@ export default function App() {
   }
 
   return (
-    <div className="shell">
+    <div className="shell" data-theme={theme}>
       <aside className="sidebar">
         <div className="brand-card">
-          <p className="eyebrow">Project Switchboard</p>
+          <div className="brand-topline">
+            <p className="eyebrow">Project Switchboard</p>
+            <div className="theme-toggle" role="tablist" aria-label="Theme">
+              {Object.entries(themeLabels).map(([value, label]) => (
+                <button
+                  key={value}
+                  className={`theme-chip ${theme === value ? "selected" : ""}`}
+                  type="button"
+                  onClick={() => setTheme(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
           <h1>Resume the right work in seconds.</h1>
           <p className="lede">
             Keep every project ready to restart with one click, not ten minutes of context hunting.

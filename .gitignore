@@ -5,3 +5,4 @@ dist
 backend/node_modules
 frontend/node_modules
 backend/data/*.local.json
+backend/data/projects.json
