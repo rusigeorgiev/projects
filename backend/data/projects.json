@@ -48,16 +48,18 @@
     "nextAction": "Score the remaining workflows in the spreadsheet and sort by time saved per week.",
     "startup": "Spreadsheet: ops-automation-audit.xlsx\nCalendar notes from Feb 24 and Feb 25\nUse the impact/effort rubric from the Notion template",
     "notes": "Avoid automating unstable processes. Fix the workflow first, then automate. Email tagging is promising but depends on cleaner labels.",
-    "status": "blocked",
+    "status": "active",
     "priority": "medium",
     "deadline": "",
     "energy": "focus",
     "context": "office",
     "estimatedMinutes": 60,
+    "images": [],
     "tags": [
       "systems",
       "analysis"
     ],
-    "updatedAt": "2026-02-20T14:45:00.000Z"
+    "deletedAt": null,
+    "updatedAt": "2026-03-02T19:03:07.885Z"
   }
 ]

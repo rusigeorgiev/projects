@@ -113,7 +113,7 @@ export default function App() {
   const [recommendation, setRecommendation] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [draft, setDraft] = useState(emptyProject);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(true);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [mode, setMode] = useState("deep");
@@ -164,7 +164,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    loadProjects(null, mode);
+    loadProjects(null, mode, false);
   }, [mode, currentContext]);
 
   const query = deferredSearch.trim().toLowerCase();
