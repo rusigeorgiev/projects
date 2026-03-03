@@ -281,6 +281,12 @@ label span,
   color: var(--text);
 }
 
+.assistant-card h2,
+.assistant-card p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .reason-list {
   list-style: none;
   padding: 0;
