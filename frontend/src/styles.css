@@ -324,6 +324,7 @@ label span,
   margin-top: 12px;
   margin-bottom: 10px;
   font-size: 1.1rem;
+  color: var(--text);
 }
 
 .project-tile p {
